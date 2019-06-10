@@ -4,8 +4,9 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;
 
-public interface GetDataService {
+public interface SongDao {
 
-    @GET("/photos")
-    Call<List<SongModel>> getAllPhotos();
+    @GET("/api/v1/playlist")
+    Call<List<SongModel>> getAllSong();
+
 }

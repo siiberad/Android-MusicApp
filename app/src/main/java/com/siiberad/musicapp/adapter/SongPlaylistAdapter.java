@@ -13,32 +13,20 @@ import com.siiberad.musicapp.R;
 import com.siiberad.musicapp.model.SongModel;
 import com.squareup.picasso.Picasso;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 public class SongPlaylistAdapter extends RecyclerView.Adapter<SongPlaylistAdapter.CustomViewHolder> {
 
     private List<SongModel> dataList;
     private Context context;
+    private View.OnClickListener onClickListener;
 
-    public SongPlaylistAdapter(Context context, List<SongModel> dataList){
+    public SongPlaylistAdapter(Context context, List<SongModel> dataList, View.OnClickListener onClickListener){
         this.context = context;
         this.dataList = dataList;
-    }
-
-    class CustomViewHolder extends RecyclerView.ViewHolder {
-
-        public final View mView;
-
-        TextView txtTitle;
-        private ImageView coverImage;
-
-        CustomViewHolder(View itemView) {
-            super(itemView);
-            mView = itemView;
-
-            txtTitle = mView.findViewById(R.id.title);
-            coverImage = mView.findViewById(R.id.coverImage);
-        }
+        this.onClickListener = onClickListener;
     }
 
     @Override
@@ -48,16 +36,30 @@ public class SongPlaylistAdapter extends RecyclerView.Adapter<SongPlaylistAdapte
         return new CustomViewHolder(view);
     }
 
+    class CustomViewHolder extends RecyclerView.ViewHolder {
+        TextView title;
+        TextView singer;
+        TextView album;
+        TextView duration;
+
+        CustomViewHolder(View itemView) {
+            super(itemView);
+            title = itemView.findViewById(R.id.title);
+            singer = itemView.findViewById(R.id.singer);
+            album = itemView.findViewById(R.id.album);
+            duration = itemView.findViewById(R.id.duration);
+        }
+    }
+
     @Override
     public void onBindViewHolder(CustomViewHolder holder, int position) {
-        holder.txtTitle.setText(dataList.get(position).getTitle());
-
-        Picasso.Builder builder = new Picasso.Builder(context);
-        builder.downloader(new OkHttp3Downloader(context));
-        builder.build().load(dataList.get(position).getThumbnailUrl())
-                .placeholder((R.drawable.ic_launcher_background))
-                .error(R.drawable.ic_launcher_background)
-                .into(holder.coverImage);
+        final SongModel songModel = dataList.get(position);
+        holder.title.setText(songModel.getTitle());
+        holder.singer.setText(songModel.getSinger());
+        holder.album.setText(songModel.getAlbum());
+        holder.duration.setText(songModel.getDuration());
+        holder.itemView.setTag(songModel);
+        holder.itemView.setOnClickListener(onClickListener);
 
     }
 

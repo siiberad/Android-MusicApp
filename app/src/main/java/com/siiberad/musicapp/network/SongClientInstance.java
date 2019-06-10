@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SongClientInstance {
 
     private static Retrofit retrofit;
-    private static final String BASE_URL = "https://jsonplaceholder.typicode.com";
+    private static final String BASE_URL = "http://cc17890c.ngrok.io";
 
     public static Retrofit getRetrofitInstance() {
         if (retrofit == null) {

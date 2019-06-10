@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="80dp"
+    android:width="80dp"
+    android:viewportHeight="128"
+    android:viewportWidth="128">
+
+    <group android:name="firstCircle">
+        <path android:fillColor="#00000000"
+            android:pathData="M64,26 a1,1 0 0,0 0,76.5"
+            android:strokeColor="#000000"
+            android:strokeWidth="1"/>
+
+        <path android:fillColor="#00000000"
+            android:pathData="M64,26 a1,1 0 1,1 0,76.5"
+            android:strokeColor="#000000"
+            android:strokeWidth="1"/>
+    </group>
+</vector>

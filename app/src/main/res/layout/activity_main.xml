@@ -1,15 +1,20 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    tools:context=".MainActivity">
+
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="#ffffff"
-        android:elevation="4dp"
-        android:minHeight="?attr/actionBarSize">
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="#ffffff"
+            android:elevation="4dp"
+            android:minHeight="?attr/actionBarSize"
+            tools:ignore="MissingConstraints">
 
         <RelativeLayout
             android:layout_height="match_parent"
@@ -44,4 +49,43 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="60dp"/>
+
+    <RelativeLayout
+        android:id="@+id/footer"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true" style="@android:style/ButtonBar"
+        android:background="@android:color/white"
+        tools:ignore="MissingConstraints">
+
+        <TextView
+            android:id="@+id/judul_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="1dp"/>
+
+        <TextView
+            android:id="@+id/penyanyi_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginLeft="5dp"
+            android:textSize="12sp"
+
+            android:layout_marginStart="5dp"
+            android:layout_below="@+id/judul_play"
+            />
+
+        <ImageButton android:id="@+id/play_button"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="2dp"
+            android:background="@android:color/white"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+    </RelativeLayout>
 </RelativeLayout>

@@ -13,27 +13,54 @@
         android:layout_height="wrap_content"
         >
 
-        <ImageView
-            android:id="@+id/coverImage"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_alignParentTop="true"
-            android:scaleType="centerCrop"
-            android:layout_alignParentLeft="true"
-            tools:ignore="RtlHardcoded"
-            android:contentDescription="TODO" />
-
         <TextView
             android:id="@+id/title"
             style="@style/TextAppearance.AppCompat.Medium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:layout_toEndOf="@+id/coverImage"
-            android:lines="2"
+            android:lines="1"
+            android:textSize="13sp"
             android:paddingTop="3dp"
             android:layout_marginLeft="20dp"
-            android:layout_toRightOf="@+id/coverImage" />
+            />
+
+        <TextView
+            android:id="@+id/singer"
+            style="@style/TextAppearance.AppCompat.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:textSize="11sp"
+            android:paddingTop="1dp"
+            android:layout_marginLeft="20dp"
+            android:layout_below="@+id/title"
+            tools:ignore="SmallSp" />
+
+        <TextView
+            android:id="@+id/album"
+            style="@style/TextAppearance.AppCompat.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="5dp"
+            android:textSize="11sp"
+            android:paddingTop="1dp"
+            android:layout_marginLeft="20dp"
+            android:layout_below="@+id/singer"
+            tools:ignore="SmallSp" />
+
+        <TextView
+            android:id="@+id/duration"
+            style="@style/TextAppearance.AppCompat.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="3dp"
+            android:textSize="13sp"
+            android:layout_marginRight="10dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="10dp" />
 
     </RelativeLayout>
 

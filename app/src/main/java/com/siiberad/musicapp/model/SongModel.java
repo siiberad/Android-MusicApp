@@ -1,65 +1,74 @@
 package com.siiberad.musicapp.model;
 
-import com.google.gson.annotations.SerializedName;
 
 public class SongModel {
 
-    @SerializedName("albumId")
-    private Integer albumId;
-    @SerializedName("id")
-    private Integer id;
-    @SerializedName("title")
-    private String title;
-    @SerializedName("url")
+    private float ID;
     private String url;
-    @SerializedName("thumbnailUrl")
-    private String thumbnailUrl;
+    private String title;
+    private String duration;
+    private String album;
+    private String singer;
+    private String image;
 
-    public SongModel(Integer albumId, Integer id, String title, String url, String thumbnailUrl) {
-        this.albumId = albumId;
-        this.id = id;
-        this.title = title;
-        this.url = url;
-        this.thumbnailUrl = thumbnailUrl;
-    }
 
-    public Integer getAlbumId() {
-        return albumId;
-    }
+    // Getter Methods
 
-    public void setAlbumId(Integer albumId) {
-        this.albumId = albumId;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
+    public float getID() {
+        return ID;
     }
 
     public String getUrl() {
         return url;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public String getAlbum() {
+        return album;
+    }
+
+    public String getSinger() {
+        return singer;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    // Setter Methods
+
+    public void setID(float ID) {
+        this.ID = ID;
+    }
+
     public void setUrl(String url) {
         this.url = url;
     }
 
-    public String getThumbnailUrl() {
-        return thumbnailUrl;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public void setThumbnailUrl(String thumbnailUrl) {
-        this.thumbnailUrl = thumbnailUrl;
+    public void setDuration(String duration) {
+        this.duration = duration;
+    }
+
+    public void setAlbum(String album) {
+        this.album = album;
+    }
+
+    public void setSinger(String singer) {
+        this.singer = singer;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
