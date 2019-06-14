@@ -8,12 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.jakewharton.picasso.OkHttp3Downloader;
 import com.siiberad.musicapp.R;
 import com.siiberad.musicapp.model.SongModel;
-import com.squareup.picasso.Picasso;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -65,6 +61,9 @@ public class SongPlaylistAdapter extends RecyclerView.Adapter<SongPlaylistAdapte
 
     @Override
     public int getItemCount() {
-        return dataList.size();
+        if(dataList!=null) {
+            return dataList.size();
+        }else
+            return 0;
     }
 }
