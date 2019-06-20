@@ -3,6 +3,8 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
-    <string name="play">Play</string>
-    <string name="pause">Pause</string>
+    <string name="play"> </string>
+    <string name="pause"> </string>
+    <string name="next"> </string>
+    <string name="previous"> </string>
 </resources>

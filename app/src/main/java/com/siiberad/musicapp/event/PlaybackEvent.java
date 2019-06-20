@@ -12,6 +12,7 @@ public class PlaybackEvent {
     public static final int STATE_RESUME = 4;
 
 
+
     private int status;
     private SongModel songModel;
 

@@ -34,6 +34,9 @@ import com.siiberad.musicapp.service.ForegroundService;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,16 +45,19 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     ProgressDialog progressDialog;
-    ImageButton playPause;
+    ImageButton playPause, nextButton, previousButton;
     SwipeRefreshLayout swipeLayout;
     ProgressBar spinner;
 
     boolean isPlaying=false;
+    int index;
 
     TextView judul, penyanyi;
 
-//    private final static int STORAGE_PERMISSION_CODE = 1 ;
+    RecyclerView recyclerView;
+    SongPlaylistAdapter songPlaylistAdapter;
     private EventBus bus;
+    private List<SongModel> songmodels;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +85,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 else {
                     EventBus.getDefault().post(new PlaybackCommand(PlaybackCommand.COMMAND_RESUME));
                 }
-//                isPlaying = !isPlaying;
+            }
+
+        });
+
+        nextButton = (ImageButton) findViewById(R.id.next_button);
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Next Song", Toast.LENGTH_SHORT).show();
+                EventBus.getDefault().post(new PlaybackCommand(PlaybackCommand.COMMAND_NEXT));
+            }
+
+        });
+
+        previousButton = (ImageButton) findViewById(R.id.previous_button);
+        previousButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Previous Song", Toast.LENGTH_SHORT).show();
+                EventBus.getDefault().post(new PlaybackCommand(PlaybackCommand.COMMAND_PREVIOUS));
             }
 
         });
@@ -100,13 +125,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //Foreground Service
     @SuppressLint("StaticFieldLeak")
-    public void playSong(final SongModel songModel) {
+    public void playSong(final int index, final List<SongModel> songModels) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
                 try {
                     Thread.sleep(1000);
-                    EventBus.getDefault().post(new PlaybackCommand(PlaybackCommand.COMMAND_PLAY,songModel));
+                    EventBus.getDefault().post(new PlaybackCommand(PlaybackCommand.COMMAND_PLAY, index, songModels));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -120,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -147,6 +173,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         case PlaybackEvent.STATE_PLAYED:
                             isPlaying = true;
                             playPause.setVisibility(View.VISIBLE);
+                            nextButton.setVisibility(View.VISIBLE);
+                            previousButton.setVisibility(View.VISIBLE);
                             spinner.setVisibility(View.INVISIBLE);
                             playPause.setBackgroundResource(R.drawable.pause_oranges);
                             break;
@@ -155,6 +183,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             judul.setText(event.getSongModel().getTitle());
                             penyanyi.setText(event.getSongModel().getSinger());
                             playPause.setVisibility(View.INVISIBLE);
+                            nextButton.setVisibility(View.INVISIBLE);
+                            previousButton.setVisibility(View.INVISIBLE);
                             spinner.setVisibility(View.VISIBLE);
                             break;
 
@@ -188,16 +218,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             playPause.setBackgroundResource(R.drawable.pause_oranges);
                             break;
 
-                            case PlaybackStatus.STATUS_PAUSE:
-                                isPlaying = false;
-                                break;
+                        case PlaybackStatus.STATUS_PAUSE:
+                            isPlaying = false;
+                            judul.setText(event.getSongModel().getTitle());
+                            penyanyi.setText(event.getSongModel().getSinger());
+                            playPause.setBackgroundResource(R.drawable.play_orange);
+                            break;
                     }
                 }
             }
         });
 
     }
-
 
 
     //SwipeLayout Refresh
@@ -220,11 +252,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         SongDao service = SongClientInstance.getRetrofitInstance().create(SongDao.class);
         Call<List<SongModel>> call = service.getAllSong();
+
         call.enqueue(new Callback<List<SongModel>>() {
             @Override
             public void onResponse(Call<List<SongModel>> call, Response<List<SongModel>> response) {
+
                 progressDialog.dismiss();
                 generateDataList(response.body());
+                songmodels = response.body();
             }
 
             @Override
@@ -235,21 +270,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
     private void generateDataList(List<SongModel> photoList) {
-        RecyclerView recyclerView = findViewById(R.id.customRecyclerView);
-        SongPlaylistAdapter songPlaylistAdapter = new SongPlaylistAdapter(this, photoList, this);
+        recyclerView = findViewById(R.id.customRecyclerView);
+        Collections.sort(photoList, new Comparator<SongModel>() {
+            @Override
+            public int compare(SongModel o1, SongModel o2) {
+                if(o1.getID() > o2.getID()) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+        });
+        songPlaylistAdapter = new SongPlaylistAdapter(this, photoList, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(songPlaylistAdapter);
+
     }
-
-
 
 
     //OnClick RecycleView
     @Override
     public void onClick(View v) {
-        SongModel songModel = (SongModel) v.getTag();
-        playSong(songModel);
+        float idTag = ((SongModel) v.getTag()).getID();
+
+        for (int i = 0; i < songmodels.size(); i++) {
+            if (songmodels.get(i).getID() == idTag) {
+                index = i;
+            }
+        }
+        Context context = v.getContext();
+        Intent intent = new Intent(context, SongPlayerActivity.class);
+        context.startActivity(intent);
+
+        playSong(index, songmodels);
     }
 
 

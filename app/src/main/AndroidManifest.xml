@@ -5,7 +5,6 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_round"
@@ -14,11 +13,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme2"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".SongPlayerActivity"></activity>
+
         <service
             android:name=".service.ForegroundService"
             android:enabled="true"
             android:exported="true" />
-        <activity android:name=".MainActivity"/>
+
+        <activity android:name=".MainActivity" />
         <activity
             android:name=".SplashActivity"
             android:label="@string/app_name"
@@ -29,8 +31,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".receiver.NotificationActionReceiverPlay"/>
-        <receiver android:name=".receiver.NotificationActionReceiverPause"/>
+
+        <receiver android:name=".receiver.NotificationActionReceiverPlay" />
+        <receiver android:name=".receiver.NotificationActionReceiverPause" />
+        <receiver android:name=".receiver.NotificationActionReceiverNext" />
+        <receiver android:name=".receiver.NotificationActionReceiverPrevious" />
     </application>
 
 </manifest>

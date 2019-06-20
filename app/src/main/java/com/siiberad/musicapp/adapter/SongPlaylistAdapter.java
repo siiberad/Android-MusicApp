@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.siiberad.musicapp.R;
 import com.siiberad.musicapp.model.SongModel;
 
+import java.util.Collections;
 import java.util.List;
 
 public class SongPlaylistAdapter extends RecyclerView.Adapter<SongPlaylistAdapter.CustomViewHolder> {
@@ -56,6 +57,7 @@ public class SongPlaylistAdapter extends RecyclerView.Adapter<SongPlaylistAdapte
         holder.duration.setText(songModel.getDuration());
         holder.itemView.setTag(songModel);
         holder.itemView.setOnClickListener(onClickListener);
+
 
     }
 
