@@ -10,20 +10,54 @@
     app:layout_behavior="@string/bottom_sheet_behavior">
 
 
-    <com.github.ybq.android.spinkit.SpinKitView
-        android:id="@+id/progress_main"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="200dp"
-        app:layout_constraintTop_toBottomOf="@+id/singer_main"
+    <ImageView
+        android:id="@+id/image_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="160dp"
-        android:background="@android:color/transparent"
+        android:layout_marginBottom="150dp"
+        android:layout_marginTop="70dp"
         android:indeterminate="true"
-        android:visibility="invisible"
-        app:SpinKit_Color="@color/colorPrimaryOrange"
-        />
+        android:visibility="invisible"/>
+
+    <RelativeLayout
+        android:id="@+id/footer"
+        android:layout_width="fill_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true" style="@android:style/ButtonBar"
+        android:background="@color/colorPrimaryDark"
+        android:layout_marginTop="60dp"
+        app:layout_constraintTop_toBottomOf="@+id/image_main"
+        app:layout_constraintStart_toStartOf="parent"
+        >
+
+        <TextView
+            android:id="@+id/loading_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:layout_marginLeft="25dp"
+            android:text="Loading ..."
+            android:textSize="25sp"
+            android:textColor="@color/colorPrimaryOrange"
+            android:layout_marginStart="25dp" />
+
+        <com.github.ybq.android.spinkit.SpinKitView
+            android:id="@+id/progress_main"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginTop="5dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:background="@android:color/transparent"
+            android:indeterminate="true"
+            android:visibility="invisible"
+            app:SpinKit_Color="@color/colorPrimaryOrange"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
 
 
     <ImageButton
@@ -142,10 +176,10 @@
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:elevation="100dp"
-        android:max="10"
+        android:max="1000"
 
         android:outlineProvider="none"
-        android:progress="3"
+        android:progress="0"
         android:scrollIndicators="bottom"
         android:scrollbarStyle="insideOverlay"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -172,21 +206,19 @@
         tools:targetApi="lollipop" />
 
     <TextView
-        android:id="@+id/total_duration"
+        android:id="@+id/current_position"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:elevation="100dp"
-        android:text="5:20"
         android:textColor="@color/colorPrimaryOrange"
-
         app:layout_constraintBottom_toTopOf="@+id/seeker_bar"
         app:layout_constraintStart_toStartOf="@+id/seeker_bar"
         android:layout_marginLeft="8dp"
         tools:targetApi="lollipop" />
 
     <TextView
-        android:id="@+id/remain_duration"
+        android:id="@+id/total_duration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"

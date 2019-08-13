@@ -10,12 +10,6 @@ public class NotificationActionReceiverNext extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
-
-        Boolean next = intent.getBooleanExtra("nextaction", true);
-
-        if(next.equals(true)) {
-            EventBus.getDefault().post(new PlaybackCommand(PlaybackCommand.COMMAND_NEXT));
-        }
+        EventBus.getDefault().post(new PlaybackCommand(PlaybackCommand.COMMAND_NEXT));
     }
 }

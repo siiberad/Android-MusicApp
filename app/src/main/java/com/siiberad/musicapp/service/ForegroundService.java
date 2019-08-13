@@ -6,30 +6,23 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
-import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import com.siiberad.musicapp.MainActivity;
 import com.siiberad.musicapp.R;
-import com.siiberad.musicapp.SongPlayerActivity;
 import com.siiberad.musicapp.event.PlaybackCommand;
 import com.siiberad.musicapp.event.PlaybackEvent;
+import com.siiberad.musicapp.event.PlaybackProgressEvent;
 import com.siiberad.musicapp.event.PlaybackStatus;
 import com.siiberad.musicapp.event.PlaybackStatusCheck;
-import com.siiberad.musicapp.event.Title;
 import com.siiberad.musicapp.model.SongModel;
 import com.siiberad.musicapp.receiver.NotificationActionReceiverNext;
 import com.siiberad.musicapp.receiver.NotificationActionReceiverPause;
@@ -40,22 +33,28 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class ForegroundService extends Service{
+public class ForegroundService extends Service {
 
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
+    private static final int NOTIFICATION_ID = 111;
 
     String singer, title;
-    int index;
+    int index, total_duration, currentPosition;
 
     MediaPlayer mPlayer;
-    EventBus bus;
+    EventBus bus = EventBus.getDefault();
     Notification notification;
 
-    SongModel currentlyPlayedSong;
+    SongModel currentlyPlayedSong,nextPlayedSong;
     List<SongModel> songModels;
+    private PendingIntent pendingIntent;
+    private PendingIntent pendingIntentPause;
+    private PendingIntent pendingIntentPlay;
+    private PendingIntent pendingIntentNext;
+    private PendingIntent pendingIntentPrevious;
 
     @Override
     public void onCreate() {
@@ -67,8 +66,8 @@ public class ForegroundService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        bus = EventBus.getDefault();
-        if(!bus.isRegistered(this)) {
+
+        if (!bus.isRegistered(this)) {
             bus.register(this);
         }
 
@@ -76,40 +75,82 @@ public class ForegroundService extends Service{
         mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
-                notif();
+                notif(PlaybackCommand.COMMAND_PLAY);
                 mPlayer.start();
-                EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_PLAYED, currentlyPlayedSong));
+                total_duration = mPlayer.getDuration();
+                currentPosition = mPlayer.getCurrentPosition();
+
+
+
+                EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_PLAYED, total_duration, currentPosition, currentlyPlayedSong));
+
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... voids) {
+                        while (mPlayer.isPlaying() && mPlayer.getCurrentPosition()<mPlayer.getDuration()){
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            EventBus.getDefault().post(new PlaybackProgressEvent(mPlayer.getCurrentPosition(),mPlayer.getDuration()));
+                        }
+                        return null;
+                    }
+                }.execute();
+
             }
         });
 
-                //        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                //            @Override
-                //            public void onCompletion(MediaPlayer mp) {
-                //                if (songModels != null) {
-                //                    mPlayer.stop();
-                //                    mPlayer.reset();
-                //
-                //                    if ((index + 1) == songModels.size()) {
-                //                        index = 0;
-                //                        currentlyPlayedSong = songModels.get(index);
-                //                    } else {
-                //                        currentlyPlayedSong = songModels.get(index + 1);
-                //                        index++;
-                //                    }
-                //
-                //                    try {
-                //                        mPlayer.setDataSource(currentlyPlayedSong.getUrl());
-                //                    } catch (IOException e) {
-                //                        e.printStackTrace();
-                //                    }
-                //                    title = currentlyPlayedSong.getTitle();
-                //                    singer = currentlyPlayedSong.getSinger();
-                //                    mPlayer.prepareAsync();
-                //                    EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_BUFFERING, currentlyPlayedSong));
-                //                }
-                //            }
-                //
-                //        });
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        Intent intentPause = new Intent(this, NotificationActionReceiverPause.class);
+        pendingIntentPause = PendingIntent.getBroadcast(this, UUID.randomUUID().hashCode(), intentPause, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent intentPlay = new Intent(this, NotificationActionReceiverPlay.class);
+        pendingIntentPlay = PendingIntent.getBroadcast(this, UUID.randomUUID().hashCode(), intentPlay, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent intentNext = new Intent(this, NotificationActionReceiverNext.class);
+        pendingIntentNext = PendingIntent.getBroadcast(this, 0, intentNext, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent intentPrevious = new Intent(this, NotificationActionReceiverPrevious.class);
+        pendingIntentPrevious = PendingIntent.getBroadcast(this, 0, intentPrevious, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) { if (songModels != null) {
+
+//                    mPlayer.stop();
+                    mPlayer.reset();
+//                    mPlayer.release();
+
+                    if ((index + 1) == songModels.size()) {
+                        index = 0;
+                        nextPlayedSong = songModels.get(index);
+                    } else {
+                        nextPlayedSong = songModels.get(index + 1);
+                        index++;
+                    }
+                    try {
+                        mPlayer.setDataSource(nextPlayedSong.getUrl());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    title = nextPlayedSong.getTitle();
+                    singer = nextPlayedSong.getSinger();
+
+                    mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mPlayer.prepareAsync();
+
+                    EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_BUFFERING, nextPlayedSong));
+
+                }
+            }
+
+        });
+
 
         createNotificationChannel();
 
@@ -117,49 +158,53 @@ public class ForegroundService extends Service{
     }
 
     @Subscribe
-    public void OnEvent(PlaybackCommand event){
-        if(event!=null){
-            switch (event.getCommand()){
+    public void OnEvent(PlaybackCommand event) {
+        if (event != null) {
+            switch (event.getCommand()) {
                 case PlaybackCommand.COMMAND_PLAY:
+                    if(mPlayer.isPlaying()) {
                         mPlayer.stop();
                         mPlayer.reset();
-                        index = event.getIndex();
-                        songModels = event.getSongModels();
-                        currentlyPlayedSong = songModels.get(index);
-                        try {
-                            mPlayer.setDataSource(currentlyPlayedSong.getUrl());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        title = currentlyPlayedSong.getTitle();
-                        singer = currentlyPlayedSong.getSinger();
-                        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                        mPlayer.prepareAsync();
-                        EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_BUFFERING, currentlyPlayedSong));
+                    }
+                    index = event.getIndex();
+                    songModels = event.getSongModels();
+                    currentlyPlayedSong = songModels.get(index);
+                    try {
+                        mPlayer.setDataSource(currentlyPlayedSong.getUrl());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
+                    EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_BUFFERING, currentlyPlayedSong));
+
+                    title = currentlyPlayedSong.getTitle();
+                    singer = currentlyPlayedSong.getSinger();
+
+                    mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mPlayer.prepareAsync();
                     break;
 
                 case PlaybackCommand.COMMAND_PAUSE:
+                    mPlayer.seekTo(event.getRemain_duration());
                     mPlayer.pause();
-
-                    EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_PAUSED));
+                    notif(PlaybackCommand.COMMAND_PAUSE);
+                    EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_PAUSED, total_duration , currentPosition, currentlyPlayedSong));
                     break;
 
                 case PlaybackCommand.COMMAND_RESUME:
-
                     mPlayer.start();
-
-                    EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_RESUME));
+                    notif(PlaybackCommand.COMMAND_PLAY);
+                    EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_RESUME, total_duration , currentPosition, currentlyPlayedSong));
                     break;
 
                 case PlaybackCommand.COMMAND_NEXT:
                     mPlayer.stop();
                     mPlayer.reset();
 
-                    if((index + 1) == songModels.size()){
+                    if ((index + 1) == songModels.size()) {
                         index = 0;
                         currentlyPlayedSong = songModels.get(index);
-                    }else{
+                    } else {
                         currentlyPlayedSong = songModels.get(index + 1);
                         index++;
                     }
@@ -169,11 +214,15 @@ public class ForegroundService extends Service{
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    title = currentlyPlayedSong.getTitle();
-                    singer = currentlyPlayedSong.getSinger();
-                    mPlayer.prepareAsync();
 
                     EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_BUFFERING, currentlyPlayedSong));
+
+                    title = currentlyPlayedSong.getTitle();
+                    singer = currentlyPlayedSong.getSinger();
+
+                    mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mPlayer.prepareAsync();
+
 
                     break;
 
@@ -181,10 +230,10 @@ public class ForegroundService extends Service{
                     mPlayer.stop();
                     mPlayer.reset();
 
-                    if((index - 1) == -1){
+                    if ((index - 1) == -1) {
                         index = 0;
                         currentlyPlayedSong = songModels.get(index);
-                    }else{
+                    } else {
                         currentlyPlayedSong = songModels.get(index - 1);
                         index--;
                     }
@@ -194,23 +243,57 @@ public class ForegroundService extends Service{
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    title = currentlyPlayedSong.getTitle();
-                    singer = currentlyPlayedSong.getSinger();
-                    mPlayer.prepareAsync();
+
                     EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_BUFFERING, currentlyPlayedSong));
 
+                    title = currentlyPlayedSong.getTitle();
+                    singer = currentlyPlayedSong.getSinger();
+
+                    mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mPlayer.prepareAsync();
+
+                    break;
+
+                case PlaybackCommand.COMMAND_SEEKBAR:
+                    mPlayer.seekTo(event.getRemain_duration());
+                    currentPosition =mPlayer.getCurrentPosition();
+//                    mPlayer.start();
+                    notif(PlaybackCommand.COMMAND_PLAY);
+                    EventBus.getDefault().post(new PlaybackEvent(PlaybackEvent.STATE_SEEKBAR, currentPosition, currentlyPlayedSong));
+
+                    currentlyPlayedSong.setCurrentPosition(mPlayer.getCurrentPosition());
+                    currentlyPlayedSong.setDuration(mPlayer.getDuration());
+
+                    EventBus.getDefault().post(new PlaybackStatus(PlaybackStatus.STATUS_PLAY, currentlyPlayedSong));
                     break;
             }
         }
     }
 
+//    public void run() {
+//        int current;
+//        while (mPlayer.isPlaying() && currentPosition < total_duration) {
+//            try {
+//                Thread.sleep(1000);
+//                current = currentPosition;
+//            } catch (InterruptedException e) {
+//                return;
+//            } catch (Exception e) {
+//                return;
+//            }
+//        }
+//    }
+
     @Subscribe
-    public void OnEvent(PlaybackStatusCheck event){
-        if(event!=null){
-            if(mPlayer.isPlaying()){
-                EventBus.getDefault().post(new PlaybackStatus(PlaybackStatus.STATUS_PLAY,currentlyPlayedSong));
-            }else{
-                EventBus.getDefault().post(new PlaybackStatus(PlaybackStatus.STATUS_PAUSE,currentlyPlayedSong));
+    public void OnEvent(PlaybackStatusCheck event) {
+        if (event != null) {
+            if (mPlayer.isPlaying()) {
+                currentlyPlayedSong.setCurrentPosition(mPlayer.getCurrentPosition());
+                currentlyPlayedSong.setDuration(mPlayer.getDuration());
+
+                EventBus.getDefault().post(new PlaybackStatus(PlaybackStatus.STATUS_PLAY, currentlyPlayedSong));
+            } else {
+                EventBus.getDefault().post(new PlaybackStatus(PlaybackStatus.STATUS_PAUSE, currentlyPlayedSong));
             }
         }
     }
@@ -236,39 +319,46 @@ public class ForegroundService extends Service{
             manager.createNotificationChannel(serviceChannel);
         }
     }
-    public void notif(){
 
-//        RemoteViews expandedView = new RemoteViews(context.getPackageName(), R.layout.big_notification);
+    public void notif(int mode) {
+        switch (mode) {
+            case PlaybackCommand.COMMAND_PLAY:
+                notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                        .setSmallIcon(R.drawable.audio)
+                        .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                        .setContentTitle(title)
+                        .setContentText(singer)
+                        .setWhen(System.currentTimeMillis())
+                        .setContentIntent(pendingIntent)
+                        .addAction(R.drawable.ic_skip_previous_black_24dp, getString(R.string.previous), pendingIntentPrevious)
+                        .addAction(R.drawable.pause_oranges, getString(R.string.pause), pendingIntentPause)
+                        .addAction(R.drawable.ic_skip_next_black_24dp, getString(R.string.next), pendingIntentNext)
+                        .build();
+                break;
 
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            case PlaybackCommand.COMMAND_PAUSE:
+                notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                        .setSmallIcon(R.drawable.audio)
+                        .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                        .setContentTitle(title)
+                        .setContentText(singer)
+                        .setWhen(System.currentTimeMillis())
+                        .setContentIntent(pendingIntent)
+                        .addAction(R.drawable.ic_skip_previous_black_24dp, getString(R.string.previous), pendingIntentPrevious)
+                        .addAction(R.drawable.play_orange, getString(R.string.pause), pendingIntentPlay)
+                        .addAction(R.drawable.ic_skip_next_black_24dp, getString(R.string.next), pendingIntentNext)
+                        .build();
+                break;
 
-        Intent intentPause = new Intent(this, NotificationActionReceiverPause.class);
-        intentPause.putExtra("title",true);
-        PendingIntent pendingIntentPause = PendingIntent.getBroadcast(this, 0, intentPause, 0);
 
-        Intent intentNext = new Intent(this, NotificationActionReceiverNext.class);
-        intentNext.putExtra("nextaction",true);
-        PendingIntent pendingIntentNext = PendingIntent.getBroadcast(this, 0, intentNext, 0);
-
-        Intent intentPrevious = new Intent(this, NotificationActionReceiverPrevious.class);
-        intentPrevious.putExtra("previousaction",true);
-        PendingIntent pendingIntentPrevious = PendingIntent.getBroadcast(this, 0, intentPrevious, 0);
+        }
 
 
-        notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.audio)
-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-                .setContentTitle(title)
-                .setContentText(singer)
-                .setWhen(System.currentTimeMillis())
-                .setContentIntent(pendingIntent)
-                .addAction(R.drawable.ic_skip_previous_black_24dp, getString(R.string.previous), pendingIntentPrevious)
-                .addAction(R.drawable.pause_oranges, getString(R.string.pause), pendingIntentPause)
-                .addAction(R.drawable.ic_skip_next_black_24dp, getString(R.string.next), pendingIntentNext)
-                .build();
+        startForeground(NOTIFICATION_ID, notification);
 
-        startForeground(1, notification);
+    }
+
+    public void playSong(){
 
     }
 

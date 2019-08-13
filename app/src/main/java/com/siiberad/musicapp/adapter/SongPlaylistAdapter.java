@@ -5,13 +5,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.siiberad.musicapp.R;
 import com.siiberad.musicapp.model.SongModel;
 
-import java.util.Collections;
 import java.util.List;
 
 public class SongPlaylistAdapter extends RecyclerView.Adapter<SongPlaylistAdapter.CustomViewHolder> {
@@ -54,13 +51,10 @@ public class SongPlaylistAdapter extends RecyclerView.Adapter<SongPlaylistAdapte
         holder.title.setText(songModel.getTitle());
         holder.singer.setText(songModel.getSinger());
         holder.album.setText(songModel.getAlbum());
-        holder.duration.setText(songModel.getDuration());
+        holder.duration.setText(Integer.toString(songModel.getDuration()));
         holder.itemView.setTag(songModel);
         holder.itemView.setOnClickListener(onClickListener);
-
-
     }
-
     @Override
     public int getItemCount() {
         if(dataList!=null) {

@@ -12,12 +12,6 @@ public class NotificationActionReceiverPrevious extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
-
-        Boolean previous = intent.getBooleanExtra("previousaction", true);
-
-        if(previous.equals(true)) {
-            EventBus.getDefault().post(new PlaybackCommand(PlaybackCommand.COMMAND_PREVIOUS));
-        }
+        EventBus.getDefault().post(new PlaybackCommand(PlaybackCommand.COMMAND_PREVIOUS));
     }
 }

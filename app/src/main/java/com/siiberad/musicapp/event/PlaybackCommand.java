@@ -12,31 +12,29 @@ public class PlaybackCommand {
     public static final int COMMAND_RESUME = 2;
     public static final int COMMAND_NEXT = 3;
     public static final int COMMAND_PREVIOUS = 4;
+    public static final int COMMAND_SEEKBAR = 5;
+
 
     int command;
     SongModel songModel;
     int index;
+    int remain_duration;
     List<SongModel> songModels;
 
     public PlaybackCommand(int command) {
         this.command = command;
     }
 
-//    public PlaybackCommand(int command, SongModel songModel) {
-//        this.command = command;
-//        this.songModel = songModel;
-//    }
-
-//    public PlaybackCommand(int command, SongModel songModel, ArrayList<SongModel> songModels) {
-//        this.command = command;
-//        this.songModel = songModel;
-//        this.songModels = songModels;
-//    }
-
     public PlaybackCommand(int command, int index, List<SongModel> songModels) {
         this.command = command;
         this.index = index;
         this.songModels = songModels;
+    }
+
+    public PlaybackCommand(int command, int remain_duration, SongModel songModel) {
+        this.command = command;
+        this.remain_duration = remain_duration;
+        this.songModel = songModel;
     }
 
     public int getCommand() {
@@ -69,5 +67,13 @@ public class PlaybackCommand {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public int getRemain_duration() {
+        return remain_duration;
+    }
+
+    public void setRemain_duration(int remain_duration) {
+        this.remain_duration = remain_duration;
     }
 }

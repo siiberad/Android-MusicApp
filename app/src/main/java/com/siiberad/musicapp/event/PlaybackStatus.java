@@ -8,6 +8,7 @@ public class PlaybackStatus {
     public static final int STATUS_PAUSE = 1;
 
     int status;
+    int duration;
     SongModel songModel;
 
     public PlaybackStatus(int status) {
@@ -20,6 +21,11 @@ public class PlaybackStatus {
         this.songModel = songModel;
     }
 
+    public PlaybackStatus(int status, int duration, SongModel songModel) {
+        this.status = status;
+        this.duration = duration;
+        this.songModel = songModel;
+    }
 
     public int getStatus() {
         return status;
@@ -37,4 +43,11 @@ public class PlaybackStatus {
         this.songModel = songModel;
     }
 
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
 }

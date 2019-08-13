@@ -6,10 +6,11 @@ public class SongModel {
     private float ID;
     private String url;
     private String title;
-    private String duration;
+    private int duration;
     private String album;
     private String singer;
     private String image;
+    private int currentPosition;
 
 
     // Getter Methods
@@ -26,7 +27,7 @@ public class SongModel {
         return title;
     }
 
-    public String getDuration() {
+    public int getDuration() {
         return duration;
     }
 
@@ -56,7 +57,7 @@ public class SongModel {
         this.title = title;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(int duration) {
         this.duration = duration;
     }
 
@@ -70,5 +71,13 @@ public class SongModel {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public void setCurrentPosition(int currentPosition) {
+        this.currentPosition = currentPosition;
+    }
+
+    public int getCurrentPosition() {
+        return currentPosition;
     }
 }

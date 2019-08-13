@@ -44,6 +44,8 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
 
+    private EventBus bus = EventBus.getDefault();
+
     ProgressDialog progressDialog;
     ImageButton playPause, nextButton, previousButton;
     SwipeRefreshLayout swipeLayout;
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     RecyclerView recyclerView;
     SongPlaylistAdapter songPlaylistAdapter;
-    private EventBus bus;
+
     private List<SongModel> songmodels;
 
     @Override
@@ -118,14 +120,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         spinner = (ProgressBar)findViewById(R.id.progress);
         Sprite doubleBounce = new DoubleBounce();
         spinner.setIndeterminateDrawable(doubleBounce);
-
-        bus = EventBus.getDefault();
     }
 
 
     //Foreground Service
     @SuppressLint("StaticFieldLeak")
     public void playSong(final int index, final List<SongModel> songModels) {
+
+        Intent serviceIntent = new Intent(this, ForegroundService.class);
+        if(!isMyServiceRunning(ForegroundService.class)) {
+            ContextCompat.startForegroundService(this, serviceIntent);
+        }
+
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
@@ -138,11 +144,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return null;
             }
         }.execute();
-
-        Intent serviceIntent = new Intent(this, ForegroundService.class);
-        if(!isMyServiceRunning(ForegroundService.class)) {
-            ContextCompat.startForegroundService(this, serviceIntent);
-        }
 
     }
 
@@ -266,6 +267,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onFailure(Call<List<SongModel>> call, Throwable t) {
                 progressDialog.dismiss();
                 Toast.makeText(MainActivity.this, "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
+                t.printStackTrace();
             }
         });
     }
@@ -287,7 +289,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setAdapter(songPlaylistAdapter);
 
     }
-
 
     //OnClick RecycleView
     @Override
